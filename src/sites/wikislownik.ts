@@ -1,24 +1,10 @@
-import { BasicAddNoteParams } from "../anki/addNote";
+import { makeAddToAnkiButton } from "../components/addToAnkiButton";
+// import { logger } from "../logger";
+import { DeckNamesMessage, MessageType, Messsage } from "../messages";
+import pino from "pino";
 import { logger } from "../logger";
-import { AddNoteMessage, DeckNamesMessage, MessageType, Messsage } from "../messages";
 
-function makeAnkiButton(
-    params: BasicAddNoteParams,
-    classes: string[] = [],
-): HTMLButtonElement {
-    const ankiButton = document.createElement("button");
-    ankiButton.innerHTML = "Anki";
-    ankiButton.title = "Add note to Anki";
-    ankiButton.classList.add("copy-button", ...classes);
-    ankiButton.addEventListener("click", () => {
-        chrome.runtime.sendMessage({
-            payload: params,
-            type: MessageType.addNote,
-        } as AddNoteMessage);
-    });
 
-    return ankiButton;
-}
 
 let attempt = 0;
 let attemptLimit = 100;
@@ -30,33 +16,22 @@ export function updateWikislownikArticle(
 
     attempt += 1;
     if (attempt === attemptLimit) {
-        console.log(`translationElements: ${translationElements}`);
-        console.log(`deckNames: ${deckNames}`);
+
+        logger.info({
+            message: 'Reached attempt limit',
+            translationElements,
+            deckNames
+        });
         return;
     }
-    console.log(`attempt - ${attempt}`)
+    logger.info({
+        message: `Waiting for translation container: ${attempt} ...`,
+    });
 
-    // ul elements may have one class or the other
-    // const translationElements2 = Array.from<HTMLLIElement>(document.querySelectorAll('ul.fldt-tlumaczenia > li.fldt-tlumaczenia'));
-    // translationE2lements1.push(...translationElements2);
-    console.log(translationElements);
-    // if (translationElements.length === 0 || deckNames.length === 0) {
+
     if (translationElements.length === 0) {
         window.requestAnimationFrame(updateWikislownikArticle);
     } else {
-        // ul elements may both class so have to deduplicate
-        // const seen = new Set<string>();
-        // const translationElements: Array<HTMLLIElement> = [];
-
-        // for (const element of translationElements) {
-        //     const innerText = element.innerText;
-        //     if (seen.has(innerText)) {
-        //         continue;
-        //     } else {
-        //         seen.add(innerText);
-        //         t    ranslationElements.push(element);
-        //     }
-        // }
         const heading = document.getElementById("firstHeading");
         if (!heading) {
             return;
@@ -73,7 +48,7 @@ export function updateWikislownikArticle(
             const translation = (translationElement as HTMLLIElement).innerText.split(':')[1];
             const back = `${pronunciation} ${translation}<br\><br\> http://alexey-yunoshev.github.io/incontext/?q=${lemma}`;
 
-            const ankiButton = makeAnkiButton({
+            const ankiButton = makeAddToAnkiButton({
                 back,
                 // TODO
                 deckName: "Polish",
@@ -95,17 +70,65 @@ export function updateWikislownikArticle(
                 }
                 case MessageType.deckNamesResponse: {
                     if (message.payload.error !== null) {
-                        logger.error(message.payload.error);
+                        logger.error({
+                            name: 'MessageType.deckNamesResponse Error',
+                            value: message.payload.error,
+                        });
                     } else {
                         deckNames = message.payload.result;
-                        const translationsContainer = Array.from<HTMLLIElement>(document.querySelectorAll('div.mw-parser-output > ul'));
-                        const ankiDeckPicker = new HTMLDivElement();
-                        // push label
-                        // push deck select
-                        // on select update storage
-                        console.log('deckNames ,,,,')
-                        logger.info(message.payload.result);
-                        console.log('deckNames ;;;;')
+                        logger.info({
+                            name: 'deck names',
+                            value: message.payload.result,
+                        });
+
+                        if (deckNames.length === 0) {
+                            alert('Please create at least one Deck in Anki to use Quick Anki.')
+                        }
+                        const deckKey = 'quick_anki_deck';
+                        let initialSelectedDeck = localStorage.getItem(deckKey) || deckNames[0];
+                        logger.info({
+                            name: 'initialSelectedDeck',
+                            value: initialSelectedDeck,
+                        });
+
+                        if (!deckNames.includes(initialSelectedDeck)) {
+                            logger.info(`Anki deck "${initialSelectedDeck}" not found. Deleting...`);
+                            localStorage.removeItem(deckKey)
+                            initialSelectedDeck = deckNames[0];
+                        }
+
+                        const ankiDeckPicker = document.createElement('div');
+                        ankiDeckPicker.style.marginTop = '1em';
+                        ankiDeckPicker.style.marginBottom = '1em';
+
+                        const label = document.createElement('label');
+                        label.innerText = 'Anki Deck';
+                        label.setAttribute('for', 'ankidecks');
+                        ankiDeckPicker.insertAdjacentElement('beforeend', label);
+                        label.style.marginRight = '1em';
+
+
+                        const select = document.createElement('select');
+                        select.setAttribute('name', 'ankidecks');
+                        select.setAttribute('id', 'ankidecks');
+                        select.onchange = (event) => {
+                            localStorage.setItem(deckKey, (event.target as HTMLSelectElement).value);
+                        };
+
+                        for (const deck of message.payload.result) {
+                            const option = document.createElement('option');
+                            option.setAttribute('value', deck);
+
+                            if (deck === initialSelectedDeck) {
+                                option.setAttribute('selected', 'selected');
+                            }
+                            option.innerText = deck;
+                            select.insertAdjacentElement('beforeend', option);
+                        }
+                        ankiDeckPicker.insertAdjacentElement('beforeend', select);
+
+                        const translationsContainer = document.querySelector('div.mw-parser-output > ul');
+                        translationsContainer?.insertAdjacentElement('afterbegin', ankiDeckPicker);
                     }
 
                     break;

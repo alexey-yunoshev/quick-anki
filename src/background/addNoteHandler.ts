@@ -1,39 +1,29 @@
 import { addNote } from "../anki/addNote";
-import { AnkiResponse } from "../anki/response";
 import { logger } from "../logger";
 import { AddNoteMessage, AddNoteResponseMessage, MessageType } from "../messages";
 
 export async function addNoteHandler(message: AddNoteMessage) {
-    const response = await addNote(message.payload);
-    const body: AnkiResponse = await response.json();
+  const body = await addNote(message.payload);
   
-    let notificationMessage = "Note added";
-    if (body.error !== null) {
-      notificationMessage = body.error;
-      logger.error(body.error);
+  if (body.error !== null) {
+    logger.error(body.error);
+  }
+  
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs)=> {
+    const [tab] = tabs;
+    if (tab === undefined) {
+      return;
     }
   
-    chrome.notifications.create("", {
-      message: notificationMessage,
-      iconUrl: "images/logo.png",
-      title: "Quick Anki",
-      type: "basic",
-    });
+    const tabId = tab.id;
+    if (tabId === undefined) {
+      return;
+    }
   
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs)=> {
-      const [tab] = tabs;
-      if (tab === undefined) {
-        return;
-      }
+    chrome.tabs.sendMessage(tabId, {
+      type: MessageType.addNoteResponse,
+      payload: body,
+    } as AddNoteResponseMessage);  
+  });
+}
   
-      const tabId = tab.id;
-      if (tabId === undefined) {
-        return;
-      }
-  
-      chrome.tabs.sendMessage(tabId, {
-        type: MessageType.addNoteResponse,
-        payload: body,
-      } as AddNoteResponseMessage);  
-    });
-  }

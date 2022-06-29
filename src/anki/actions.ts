@@ -1,4 +1,4 @@
 export enum ActionType {
-    AddNote = "addNote",
-    DeckNames = "deckNames",
+  AddNote = "addNote",
+  DeckNames = "deckNames",
 }

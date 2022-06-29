@@ -1,11 +1,13 @@
+import { logger } from "../logger";
 import { ActionType } from "./actions";
+import { AnkiResponse } from "./response";
 
 export interface InvokeActionParams {
   action: ActionType,
   params?: object,
 }
 
-export async function invokeAction(params: InvokeActionParams) {
+export async function invokeAction(params: InvokeActionParams): Promise<AnkiResponse> {
   const body = JSON.stringify({
     ...params,
     version: 6,
@@ -17,11 +19,12 @@ export async function invokeAction(params: InvokeActionParams) {
       body,
     });
 
-    return response;
+    return await response.json();
   } catch (error) {
-    console.error(error);
+    logger.error(error);
     return {
-      error: error.message,
-    }
+      error: (error as Error).message,
+      result: null,
+    };
   }
 }

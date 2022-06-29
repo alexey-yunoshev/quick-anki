@@ -11,6 +11,7 @@ module.exports = {
     ],
     "rules": {
       "import/prefer-default-export": "off",
+      "no-alert": "off",
       "no-console": "error",
       "no-restricted-syntax": ["error", "WithStatement"],
       semi: "error",

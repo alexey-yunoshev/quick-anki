@@ -18,7 +18,7 @@ export interface AddNoteResponseMessage {
   payload: AnkiResponse,
 }
 
-export interface DeckNamesMessage {
+export interface  DeckNamesMessage {
   type: MessageType.deckNames,
 }
 

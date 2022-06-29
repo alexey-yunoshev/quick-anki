@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "One-click Anki",
   "version": "0.1.1",
   "description": "One-click Anki card generation",
@@ -18,16 +18,13 @@
     }
   ],
   "background": {
-    "scripts": [
-      "background/eventListener.ts"
-    ],
-    "persistent": false
+    "service_worker": "background/eventListener.ts",
+    "type": "module"
   },
-  "permissions": [
-    "notifications",
-    "storage"
-  ],
+  "permissions": [],
   "icons": {
-    "128": "images/logo.png"
+    "128": "assets/icons/icon128.png",
+    "48": "assets/icons/icon48.png",
+    "16": "assets/icons/icon16.png"
   }
 }

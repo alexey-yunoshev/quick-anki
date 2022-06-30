@@ -109,7 +109,6 @@ export function formatSameRootLemmas() {
     }
   );
 }
-}
 
 
 export async function updateWikislownikArticle(

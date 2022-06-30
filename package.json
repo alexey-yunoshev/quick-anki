@@ -19,7 +19,6 @@
     "webext-prod": {}
   },
   "source": "src/main.ts",
-  "main": "dist/main.js",
   "author": "Alexey Yunoshev",
   "license": "ISC",
   "devDependencies": {

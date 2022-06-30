@@ -1,10 +1,12 @@
 import { makeAddToAnkiButton } from "../components/addToAnkiButton";
+import { insertlemmasLinksByLevel } from "../components/insertlemmasLinksByLevel";
 import { registerMessageListener } from "../page-message-listener";
 import { waitForElements } from "../utils/waitForSelector";
 
 import { getLemmaLevel } from "../data/getLemmaLevel";
 import { polishLemmasLevelMap } from "../data/languages/polish";
 import { logger } from "../logger";
+import { LemmasByLevel } from "../types";
 
 export interface FormatSameRootLemmasOptions {
   showLemmaLevel?: boolean;
@@ -47,7 +49,7 @@ export function formatSameRootLemmas() {
     return;
   }
 
-  const lemmasByLevel = new Map<string, Array<{ lemma: string; url: string }>>();
+  const lemmasByLevel: LemmasByLevel = new Map();
 
   for (const section of sections) {
     for (const child of Array.from(section.children)) {
@@ -78,27 +80,35 @@ export function formatSameRootLemmas() {
     lemmasByLevel,
   });
 
-  if (lemmasByLevel.size > 0) {
-    const buttons: Array<HTMLButtonElement> = [];
+  // if (lemmasByLevel.size > 0) {
+  //   const buttons: Array<HTMLButtonElement> = [];
 
-    for (const [level, urls] of Array.from(lemmasByLevel.entries()).sort(([level1], [level2]) => level1.localeCompare(level2))) {
-      const openUrlsButton: HTMLButtonElement = document.createElement("button");
-      openUrlsButton.innerText = `Open all ${level} level lemmas`;
+  //   for (const [level, urls] of Array.from(lemmasByLevel.entries()).sort(([level1], [level2]) => level1.localeCompare(level2))) {
+  //     const openUrlsButton: HTMLButtonElement = document.createElement("button");
+  //     openUrlsButton.innerText = `Open all ${level} level lemmas`;
 
-      openUrlsButton.addEventListener("click", () => {
-        for (const { url } of urls) {
-          window.open(url, "_blank");
-        }
-      });
+  //     openUrlsButton.addEventListener("click", () => {
+  //       for (const { url } of urls) {
+  //         window.open(url, "_blank");
+  //       }
+  //     });
 
-      buttons.push(openUrlsButton);
+  //     buttons.push(openUrlsButton);
+  //   }
+
+  //   const buttonsContainer = document.createElement("div");
+  //   buttonsContainer.replaceChildren(...buttons);
+  //   buttonsContainer.classList.add("root_links_container", "ml-25");
+  //   titleElement.insertAdjacentElement("afterend", buttonsContainer);
+
+  insertlemmasLinksByLevel(
+    lemmasByLevel,
+    {
+      insertPosition: "afterend",
+      selector: "dt.fldt-pokrewne",
     }
-
-    const buttonsContainer = document.createElement("div");
-    buttonsContainer.replaceChildren(...buttons);
-    buttonsContainer.classList.add("root_links_container", "ml-25");
-    titleElement.insertAdjacentElement("afterend", buttonsContainer);
-  }
+  );
+}
 }
 
 

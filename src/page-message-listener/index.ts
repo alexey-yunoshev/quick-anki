@@ -8,6 +8,9 @@ export function registerMessageListener({
 }: {
   deckPickerLocation: DeckPickerLocation,
 }) {
+  if (!chrome.runtime) {
+    window.location.reload();
+  }
   chrome.runtime.onMessage.addListener(async (message: Messsage) => {
     switch (message.type) {
       case MessageType.addNoteResponse: {

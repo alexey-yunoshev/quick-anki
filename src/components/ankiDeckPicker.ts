@@ -1,3 +1,4 @@
+import { LOCAL_STORAGE_DECK_KEY } from "../constants";
 import { logger } from "../logger";
 
 export function makeAnkiDeckPicker({
@@ -5,9 +6,8 @@ export function makeAnkiDeckPicker({
 }: {
   deckNames: Array<string>,
 }) {
-  const deckKey = "quick_anki_deck";
-  let initialSelectedDeck = localStorage.getItem(deckKey) || deckNames[0];
-  localStorage.setItem(deckKey, initialSelectedDeck);
+  let initialSelectedDeck = localStorage.getItem(LOCAL_STORAGE_DECK_KEY) || deckNames[0];
+  localStorage.setItem(LOCAL_STORAGE_DECK_KEY, initialSelectedDeck);
 
   logger.info({
     name: "initialSelectedDeck",
@@ -16,7 +16,7 @@ export function makeAnkiDeckPicker({
 
   if (!deckNames.includes(initialSelectedDeck)) {
     logger.info(`Anki deck "${initialSelectedDeck}" not found. Deleting...`);
-    localStorage.setItem(deckKey, deckNames[0]);
+    localStorage.setItem(LOCAL_STORAGE_DECK_KEY, deckNames[0]);
     [initialSelectedDeck] = deckNames;
   }
 
@@ -35,7 +35,7 @@ export function makeAnkiDeckPicker({
   select.setAttribute("name", "ankidecks");
   select.setAttribute("id", "ankidecks");
   select.onchange = (event) => {
-    localStorage.setItem(deckKey, (event.target as HTMLSelectElement).value);
+    localStorage.setItem(LOCAL_STORAGE_DECK_KEY, (event.target as HTMLSelectElement).value);
   };
 
   for (const deck of deckNames) {

@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "One-click Anki",
+  "name": "Quick Anki",
   "version": "0.1.1",
-  "description": "One-click Anki card generation",
+  "description": "Add new notes to your Anki decks with a click of a button",
   "content_scripts": [
     {
       "css": [

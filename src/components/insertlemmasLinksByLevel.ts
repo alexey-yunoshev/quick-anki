@@ -8,24 +8,38 @@ export function insertlemmasLinksByLevel(
     },
 ) {
     if (lemmas.size > 0) {
-        const buttons: Array<HTMLButtonElement> = [];
+        const levelContainers: Array<HTMLDivElement> = [];
+
+        const comma = document.createElement('span');
+        comma.innerText = ', '
+
 
         for (const [level, urls] of Array.from(lemmas.entries()).sort(([level1], [level2]) => level1.localeCompare(level2))) {
-            const openUrlsButton: HTMLButtonElement = document.createElement("button");
-            openUrlsButton.innerText = `Open all ${level} level lemmas`;
+            const levelContainer: HTMLDivElement = document.createElement("div");
+            const title: HTMLSpanElement = document.createElement("span");
+            title.innerText = `${level} level words: `;
+            title.style.fontWeight = '600';
+            levelContainer.insertAdjacentElement('afterbegin', title);
 
-            openUrlsButton.addEventListener("click", () => {
-                for (const { url } of urls) {
-                    window.open(url, "_blank");
+            let first = true;
+            for (const { url, lemma } of urls) {
+                if (!first) {
+                    levelContainer.insertAdjacentElement('beforeend', comma);
                 }
-            });
+                first = false;
+                const anchorElement: HTMLAnchorElement = document.createElement('a');
+                anchorElement.href = url;
+                anchorElement.innerText = lemma;
+                levelContainer.insertAdjacentElement('beforeend', anchorElement);
+            }
 
-            buttons.push(openUrlsButton);
+            levelContainers.push(levelContainer);
         }
 
         const buttonsContainer = document.createElement("div");
-        buttonsContainer.replaceChildren(...buttons);
+        buttonsContainer.replaceChildren(...levelContainers);
         buttonsContainer.classList.add("root_links_container", "ml-25");
         const container = document.querySelector(location.selector);
         container?.insertAdjacentElement(location.insertPosition, buttonsContainer);
     }
+}

@@ -12,8 +12,7 @@
         "main.ts"
       ],
       "matches": [
-        "http://*/*",
-        "https://*/*"
+        "https://pl.wiktionary.org/*"
       ]
     }
   ],
